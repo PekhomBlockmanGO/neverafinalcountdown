@@ -156,8 +156,9 @@ _log_handlers = {
     },
 }
 
-# Only add the file handler on Linux (production VPS) where the log dir exists.
-if _platform.system() != 'Windows' and not DEBUG:
+# Only add the file handler on Linux VPS where the log dir exists.
+# Skip on Windows, and skip on Render (where RENDER_EXTERNAL_HOSTNAME is set).
+if _platform.system() != 'Windows' and not DEBUG and not RENDER_EXTERNAL_HOSTNAME:
     _log_handlers['file'] = {
         'class': 'logging.handlers.RotatingFileHandler',
         'filename': '/var/log/nevera/django.log',
