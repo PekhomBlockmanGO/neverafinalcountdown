@@ -11,11 +11,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------------
 # CORE SECURITY
 # ---------------------------
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SECRET_KEY', default='insecure-default-key-for-render-build')
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+# Allow Render's dynamic hostname automatically if running on Render
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='nevera.neverno.in', cast=Csv())
+RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 SITE_BASE_URL = config('SITE_BASE_URL', default='https://nevera.neverno.in')
+# Override SITE_BASE_URL automatically on Render so QR codes work instantly
+if RENDER_EXTERNAL_HOSTNAME:
+    SITE_BASE_URL = f'https://{RENDER_EXTERNAL_HOSTNAME}'
+
 
 # ---------------------------
 # APPLICATIONS
