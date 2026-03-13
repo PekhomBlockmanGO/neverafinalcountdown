@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.db.models import Count, F, ExpressionWrapper, DurationField
+from django.conf import settings
 
 from tickets.models import Ticket, TicketLog
 from masters.models import Site, Area, Location, SpecificArea
@@ -344,12 +345,8 @@ def _handle_generate_qr(request, context):
     location = get_object_or_404(Location, id=qr_location)
     room = get_object_or_404(SpecificArea, id=qr_room)
 
-    qr_text = (
-        f"Site: {site.name}\n"
-        f"Building: {area.name}\n"
-        f"Floor: {location.name}\n"
-        f"Room: {room.name}"
-    )
+    base_url = getattr(settings, 'SITE_BASE_URL', 'http://127.0.0.1:8000').rstrip('/')
+    qr_text = f"{base_url}/tickets/q/{location.qr_token}/"
 
     qr = qrcode.QRCode(
         version=1, error_correction=ERROR_CORRECT_H, box_size=10, border=4
