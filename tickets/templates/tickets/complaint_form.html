@@ -1,0 +1,704 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neverno CMMS - Report Issue</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        /* --- BRAND VARIABLES & THEME CONFIG --- */
+        :root {
+            --brand-navy: #1e2a5c;
+            --brand-red: #d90429;
+            --brand-red-hover: #ff1f48;
+            --text-white: #ffffff;
+            --text-light: #cbd5e1;
+        }
+
+        /* 1. BACKGROUND & AMBIENT LIGHTING */
+        body {
+            /* Deep baseline color */
+            background-color: #0b112c;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            position: relative;
+            overflow-x: hidden;
+            /* Subtle grain texture overlay */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.005' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        /* 🌟 THE SECRET SAUCE: Background Orbs for the Glass to Blur 🌟 */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(100px);
+            animation: float 10s ease-in-out infinite alternate;
+        }
+        
+        body::before {
+            background: rgba(217, 4, 41, 0.4); /* Brand Red Glow */
+            width: 50vw; height: 50vw;
+            max-width: 500px; max-height: 500px;
+            top: -10%; left: -10%;
+        }
+        
+        body::after {
+            background: rgba(30, 42, 92, 0.8); /* Brand Blue Glow */
+            width: 60vw; height: 60vw;
+            max-width: 600px; max-height: 600px;
+            bottom: -10%; right: -10%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(30px) scale(1.1); }
+        }
+
+        /* Mobile Scroll Fix */
+        @media (max-height: 950px) {
+            body { align-items: flex-start; }
+            .form-container { margin-top: 20px; margin-bottom: 20px; }
+        }
+
+        /* --- THE GLASS CARD --- */
+        .form-container {
+            /* Linear gradient simulates light hitting the glass */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            /* Soft shadow below, etched bright edges on top/left to look 3D */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 2. HEADER SECTION */
+        .form-header-section {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 40px 30px 20px 30px;
+            text-align: center;
+            position: relative;
+            /* Soft dividing line */
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05); 
+        }
+
+        /* --- SOS BUTTON --- */
+        .btn-sos {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--brand-red), #b00321);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 15px rgba(217, 4, 41, 0.5);
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: sos-pulse 2.5s infinite;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+        }
+
+        .btn-sos:hover {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--brand-red-hover);
+            color: white;
+            box-shadow: 0 8px 25px rgba(217, 4, 41, 0.7);
+        }
+
+        @keyframes sos-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(217, 4, 41, 0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(217, 4, 41, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 4, 41, 0); }
+        }
+
+        .brand-logo {
+            width: 100px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+        .brand-logo:hover { transform: scale(1.05); }
+
+        .brand-sub {
+            color: var(--brand-red);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .site-display {
+            color: var(--text-white); 
+            font-weight: 600; 
+            font-size: 1.6rem;
+            margin: 0;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-watermark {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
+        }
+
+        /* 3. FORM BODY */
+        .form-body-section { padding: 35px 30px; }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            display: block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        /* 4. GLASS INPUTS (Upgraded to look like etched indents) */
+        select, textarea, input[type="text"], input[type="number"], input[type="tel"], input[type="email"] {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important; /* Catch light at bottom */
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            font-size: 1rem !important;
+            color: var(--text-white) !important;
+            font-weight: 500 !important;
+            transition: all 0.25s ease !important;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2) !important; /* Deeper indent shadow */
+            box-sizing: border-box;
+        }
+
+        ::placeholder { color: rgba(255, 255, 255, 0.3) !important; opacity: 1; }
+
+        select:hover, textarea:hover, input:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        select:focus, textarea:focus, input:focus {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05), inset 0 1px 2px rgba(0,0,0,0.2) !important;
+            outline: none !important;
+        }
+        
+        select {
+             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+             background-repeat: no-repeat !important;
+             background-position: right 1.2rem center !important;
+             background-size: 14px 10px !important;
+             appearance: none !important;
+             cursor: pointer;
+        }
+
+        textarea { resize: vertical; min-height: 100px; }
+
+        .locked-field { pointer-events: none; opacity: 0.6; }
+        .locked-field input, .locked-field select {
+            background-color: rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.4) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.3)' class='bi bi-lock-fill' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'/%3E%3C/svg%3E") !important;
+        }
+
+        .error-text {
+            color: #ff4d6d;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 6px;
+            display: block;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* 5. GLASS PRIORITY SELECTOR */
+        .priority-group {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .priority-btn {
+            flex: 1;
+            text-align: center;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid transparent;
+            margin: 0;
+        }
+
+        .priority-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+
+        #low:checked + .priority-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        #med:checked + .priority-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        #high:checked + .priority-btn {
+            background: linear-gradient(135deg, var(--brand-red), #b00321);
+            color: white;
+            box-shadow: 0 4px 12px rgba(217, 4, 41, 0.3);
+        }
+
+        /* 6. GLASS UPLOAD BOX */
+        .photo-upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            padding: 35px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .photo-upload-box:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .upload-icon {
+            width: 42px; height: 42px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+        
+        .photo-upload-box:hover .upload-icon {
+            color: white;
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        .upload-text {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-white);
+            letter-spacing: 0.5px;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        input[type="file"] { display: none; }
+
+        .remove-photo-btn {
+            display: none;
+            position: absolute;
+            top: -10px; right: -10px;
+            background: rgba(217, 4, 41, 0.9);
+            color: white;
+            border-radius: 50%;
+            width: 28px; height: 28px;
+            line-height: 28px;
+            text-align: center;
+            font-size: 0.8rem; font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid #fff;
+        }
+        
+        .remove-photo-btn:hover { background: var(--brand-red-hover); transform: scale(1.15); }
+
+        /* 7. SUBMIT BUTTON */
+        .btn-submit {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, var(--brand-red), #b00321);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px -5px rgba(217, 4, 41, 0.6);
+        }
+
+        /* 8. GLASS MODALS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 20, 0.8);
+            backdrop-filter: blur(15px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            width: 90%; max-width: 360px;
+            border-radius: 24px; padding: 35px 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: scale(0.95) translateY(20px); 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.show .modal-card { transform: scale(1) translateY(0); }
+
+        .modal-icon {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-white);
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 25px; font-size: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .modal-title-text {
+            color: var(--text-white); font-weight: 800; font-size: 1.3rem; margin-bottom: 25px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .modal-buttons { display: flex; gap: 12px; }
+
+        .btn-yes, .btn-no {
+            flex: 1; border-radius: 12px; padding: 14px; font-weight: 700; border: none; transition: 0.3s;
+            font-size: 1rem; text-decoration: none; cursor: pointer;
+        }
+        .btn-yes { background: linear-gradient(135deg, var(--brand-red), #b00321); color: white !important; box-shadow: 0 4px 15px rgba(217, 4, 41, 0.3); }
+        .btn-yes:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217, 4, 41, 0.5); }
+
+        .btn-no { background: rgba(255, 255, 255, 0.05); color: var(--text-white); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-no:hover { background: rgba(255, 255, 255, 0.15); }
+
+        /* Autofill styling fix for Chrome */
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
+        textarea:-webkit-autofill, textarea:-webkit-autofill:hover, textarea:-webkit-autofill:focus,
+        select:-webkit-autofill, select:-webkit-autofill:hover, select:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--text-white) !important;
+            -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.3) inset !important;
+            transition: background-color 5000s ease-in-out 0s !important;
+        }
+
+        /* --- FIX FOR INVISIBLE DROPDOWN OPTIONS --- */
+        select option {
+            background-color: #0b112c !important; /* Deep dark blue to match your theme */
+            color: #ffffff !important;            /* White text */
+            padding: 10px !important;             /* A little breathing room */
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-container">
+
+    <div class="form-header-section">
+        <button type="button" class="btn-sos" id="btnSosToggle">SOS</button>
+
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/110x40?text=LOGO+Here'">
+        <div class="brand-sub">New Docket</div>
+        <h3 class="site-display">
+            {% if location_obj %}
+                {{ location_obj.area.site.name }}
+            {% else %}
+                Nevera
+            {% endif %}
+        </h3>
+        <div class="header-watermark">Powered by <strong>NEVERNO</strong></div>
+    </div>
+
+    <div class="form-body-section">
+        <form method="POST" enctype="multipart/form-data" id="ticketForm">
+            {% csrf_token %}
+
+            <div class="mb-4 {% if is_qr %}locked-field{% endif %}">
+                <label class="form-label">Building</label>
+                {{ form.area }}
+                <div class="error-text">{{ form.area.errors }}</div>
+            </div>
+
+            <div class="mb-4 {% if is_qr %}locked-field{% endif %}">
+                <label class="form-label">Floor</label>
+                {{ form.location }}
+                <div class="error-text">{{ form.location.errors }}</div>
+            </div>
+
+            <div class="mb-4 {% if is_qr %}locked-field{% endif %}">
+                <label class="form-label">Room</label>
+                {{ form.specific_area }}
+                <div class="error-text">{{ form.specific_area.errors }}</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Issue Category</label>
+                {{ form.category }}
+                <div class="error-text">{{ form.category.errors }}</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Description</label>
+                {{ form.description }}
+                <div class="error-text">{{ form.description.errors }}</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Phone Number</label>
+                {{ form.reporter_phone }}
+                <div class="error-text">{{ form.reporter_phone.errors }}</div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Priority</label>
+                <div class="priority-group">
+                    <input type="radio" name="priority" value="Low" id="low" class="d-none priority-radio" required>
+                    <label for="low" class="priority-btn">Low</label>
+
+                    <input type="radio" name="priority" value="Medium" id="med" class="d-none priority-radio">
+                    <label for="med" class="priority-btn">Medium</label>
+
+                    <input type="radio" name="priority" value="High" id="high" class="d-none priority-radio">
+                    <label for="high" class="priority-btn">High</label>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="form-label">Attach Photo</label>
+                <label class="photo-upload-box" for="id_photo" id="upload-label">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    
+                    <span id="file-name" class="upload-text">Tap to Upload</span>
+                    <div id="remove-btn" class="remove-photo-btn" title="Remove Photo">✕</div>
+                </label>
+                {{ form.photo }}
+                <div class="error-text">{{ form.photo.errors }}</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Submit Ticket</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+        <div class="modal-icon">
+            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <div class="modal-title-text">Ready to submit?</div>
+        <div class="modal-buttons">
+            <button type="button" class="btn-no" id="btnNo">Cancel</button>
+            <button type="button" class="btn-yes" id="btnYes">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="sosModal">
+    <div class="modal-card">
+        <div class="modal-icon" style="color: #ff4d6d; border-color: rgba(255, 77, 109, 0.3); background: rgba(255, 77, 109, 0.1);">
+            <i class="bi bi-telephone-outbound-fill"></i>
+        </div>
+        <div class="modal-title-text" style="margin-bottom: 5px;">Emergency Contact</div>
+        
+        <h2 style="color: var(--text-white); font-weight: 900; letter-spacing: 2px; margin-bottom: 25px;">
+            {% if emergency_contact and emergency_contact.phone_number|length == 10 %}
+                {{ emergency_contact.phone_number }}
+            {% else %}
+                Not Set
+            {% endif %}
+        </h2>
+        
+        <div class="modal-buttons">
+            <button type="button" class="btn-no" id="btnSosClose">Back</button>
+            
+            {% if emergency_contact and emergency_contact.phone_number|length == 10 %}
+            <a href="tel:{{ emergency_contact.phone_number }}" class="btn-yes" style="flex: 2;">
+                <i class="bi bi-telephone-fill me-2"></i> Call Now
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// --- STRICT 10-DIGIT PHONE VALIDATION ---
+const reporterPhoneInput = document.querySelector('input[name="reporter_phone"]');
+if (reporterPhoneInput) {
+    reporterPhoneInput.setAttribute('pattern', '[0-9]{10}');
+    reporterPhoneInput.setAttribute('maxlength', '10');
+    reporterPhoneInput.setAttribute('minlength', '10');
+    reporterPhoneInput.setAttribute('title', 'Please enter exactly 10 digits');
+    
+    reporterPhoneInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+}
+
+// --- PHOTO LOGIC ---
+const photoInput = document.getElementById('id_photo');
+const fileNameSpan = document.getElementById('file-name');
+const removeBtn = document.getElementById('remove-btn');
+const uploadIcon = document.querySelector('.upload-icon');
+const uploadBox = document.querySelector('.photo-upload-box');
+
+if(photoInput){
+    photoInput.addEventListener('change', function(e){
+        if (e.target.files && e.target.files.length > 0) {
+            fileNameSpan.textContent = e.target.files[0].name;
+            removeBtn.style.display = 'block';
+            uploadIcon.style.display = 'none';
+            uploadBox.style.borderColor = 'rgba(255, 255, 255, 0.8)';
+            uploadBox.style.background = 'rgba(255, 255, 255, 0.1)';
+        } else {
+            resetUploadBox();
+        }
+    });
+}
+
+function resetUploadBox() {
+    fileNameSpan.textContent = "Tap to Upload";
+    removeBtn.style.display = 'none';
+    uploadIcon.style.display = 'block';
+    uploadBox.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+    uploadBox.style.background = 'rgba(255, 255, 255, 0.03)';
+}
+
+if(removeBtn){
+    removeBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        photoInput.value = '';
+        resetUploadBox();
+    });
+}
+
+// --- FORM SUBMIT MODAL SCRIPT ---
+const form = document.getElementById('ticketForm');
+const modal = document.getElementById('confirmModal');
+const btnYes = document.getElementById('btnYes');
+const btnNo = document.getElementById('btnNo');
+
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if(form.checkValidity()) {
+        modal.classList.add('show');
+    } else {
+        form.reportValidity();
+    }
+});
+
+btnNo.addEventListener('click', function() {
+    modal.classList.remove('show');
+});
+
+modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        modal.classList.remove('show');
+    }
+});
+
+btnYes.addEventListener('click', function() {
+    btnYes.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...';
+    btnYes.style.opacity = '0.8';
+    btnYes.disabled = true;
+    btnNo.disabled = true;
+    form.submit();
+});
+
+// --- SOS MODAL LOGIC ---
+const sosModal = document.getElementById('sosModal');
+const btnSosToggle = document.getElementById('btnSosToggle');
+const btnSosClose = document.getElementById('btnSosClose');
+
+if(btnSosToggle) {
+    btnSosToggle.addEventListener('click', function() {
+        sosModal.classList.add('show');
+    });
+}
+
+if(btnSosClose) {
+    btnSosClose.addEventListener('click', function() {
+        sosModal.classList.remove('show');
+    });
+}
+
+if(sosModal) {
+    sosModal.addEventListener('click', function(e) {
+        if (e.target === sosModal) {
+            sosModal.classList.remove('show');
+        }
+    });
+}
+</script>
+
+</body>
+</html>

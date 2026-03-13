@@ -1,0 +1,25 @@
+[Unit]
+Description=Nevera CMMS — Gunicorn Application Server
+After=network.target
+
+[Service]
+User=nevera
+Group=www-data
+WorkingDirectory=/home/nevera/nevera_cmms
+EnvironmentFile=/home/nevera/nevera_cmms/.env
+ExecStart=/home/nevera/nevera_cmms/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/nevera/gunicorn.sock \
+    --access-logfile /var/log/nevera/gunicorn-access.log \
+    --error-logfile /var/log/nevera/gunicorn-error.log \
+    --log-level warning \
+    --timeout 120 \
+    config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=nevera
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

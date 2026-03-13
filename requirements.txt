@@ -1,0 +1,31 @@
+# ============================================================
+#  Nevera CMMS — Pinned requirements
+#  Python 3.10 compatible  |  Django 5.2 LTS
+#  Last verified: 2025
+# ============================================================
+
+# Core
+Django==5.2.1
+
+# Django runtime deps (keep pinned for reproducibility)
+asgiref==3.8.1
+sqlparse==0.5.3
+
+# Timezone data (required on Windows; harmless on Linux)
+tzdata==2025.1
+
+# QR code generation + image processing
+qrcode[pil]==8.0
+Pillow==10.4.0
+
+# Environment variable management
+python-decouple==3.8
+
+# WSGI application server
+gunicorn==22.0.0
+
+# Static file serving
+whitenoise==6.8.2
+
+# Colour output in terminal (used by management commands)
+colorama==0.4.6

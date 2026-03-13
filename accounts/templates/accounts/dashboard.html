@@ -1,0 +1,455 @@
+{% extends "accounts/base.html" %}
+{% load static tz %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- COMPACT & PROPORTIONAL THEME --- */
+    :root {
+        --brand-navy: #1e2a5c;
+        --brand-red: #d90429;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-600: #64748b;
+        --gray-800: #1e293b;
+    }
+
+    body { background-color: #f8fafc; }
+
+    /* 1. CONTAINER CARD (Tighter Padding) */
+    .dashboard-card {
+        background: #ffffff;
+        border: 1px solid var(--gray-200);
+        border-radius: 10px; /* Slightly tighter radius */
+        padding: 20px; /* Reduced padding to fit screen better */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* 2. FILTERS (Compact & Visible) */
+    .filter-label {
+        font-size: 0.7rem; 
+        font-weight: 700; 
+        color: var(--gray-600); 
+        text-transform: uppercase; 
+        margin-bottom: 4px; 
+        display: block; 
+    }
+
+    .form-control, .form-select {
+        background-color: var(--gray-100);
+        border: 1px solid #cbd5e1; /* Thinner border for cleaner look */
+        border-radius: 6px;
+        padding: 8px 12px; /* Reduced height */
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--brand-navy);
+        transition: all 0.2s;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff;
+        border-color: var(--brand-red);
+        box-shadow: 0 0 0 3px rgba(217, 4, 41, 0.15);
+        outline: none;
+    }
+
+    /* 3. BUTTONS (Compact) */
+    .btn-clear {
+        background: #fff0f0;
+        color: var(--brand-red);
+        border: 1px solid #ffccd2;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 8px;
+        border-radius: 6px;
+        width: 100%;
+        transition: 0.2s;
+    }
+    .btn-clear:hover { background: var(--brand-red); color: white; border-color: var(--brand-red); }
+
+    /* 4. TABLE STYLING (The Critical Fixes) */
+    .table-responsive {
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+        margin-top: 0;
+        overflow-x: auto;
+    }
+    .table { margin-bottom: 0; white-space: nowrap; /* Prevents awkward wrapping */ }
+    
+    /* RED HEADER - FIXED */
+    .table thead th {
+        background-color: var(--brand-red) !important;
+        color: white !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 14px 16px; /* Tighter padding */
+        border: none;
+        vertical-align: middle;
+        letter-spacing: 0.5px;
+    }
+
+    /* Rounded corners for the header strip */
+    .table thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    
+    /* Body Rows */
+    .table tbody td {
+        padding: 12px 16px; /* Reduced padding prevents "stretched" look */
+        vertical-align: middle;
+        font-size: 0.85rem;
+        color: var(--gray-800);
+        border-bottom: 1px solid var(--gray-100);
+        font-weight: 500;
+    }
+    
+    .table tbody tr:hover { background-color: #fff5f6; /* Subtle red tint on hover */ }
+
+    /* 5. BADGES & ELEMENTS */
+    .ticket-id {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: var(--brand-navy);
+        background: #eef2f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        font-size: 0.75rem;
+    }
+
+    .btn-icon-soft {
+        width: 28px; height: 28px; /* Smaller buttons */
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 6px;
+        background: var(--gray-100);
+        color: var(--brand-navy);
+        border: 1px solid transparent;
+        transition: 0.2s;
+        font-size: 0.9rem;
+    }
+    .btn-icon-soft:hover { background: var(--brand-navy); color: white; }
+
+    /* Modal Styles */
+    .modal-content { border-radius: 12px; border: none; overflow: hidden; }
+    .image-container { background: black; border-radius: 8px; overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-card mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="filter-label"><i class="bi bi-funnel-fill me-1"></i> Status</label>
+            <select class="form-select" id="filterStatus">
+                <option value="All">All Statuses</option>
+                <option value="Open">Open</option>
+                <option value="Attended">Attended</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="filter-label"><i class="bi bi-exclamation-triangle-fill me-1"></i> Priority</label>
+            <select class="form-select" id="filterPriority">
+                <option value="All">All Priorities</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="filter-label"><i class="bi bi-calendar-event-fill me-1"></i> Date</label>
+            <input type="date" class="form-control" id="filterDate">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-clear" id="clearFilters">Clear Filters</button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-card p-0 border-0 shadow-none bg-transparent">
+    <div class="table-responsive" style="background: white;">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center" width="8%">Docket ID</th>
+                    <th width="12%">Reported</th>
+                    <th class="text-center" width="12%">Site Name</th>
+                    <th class="text-center" width="10%">Location</th>
+                    <th class="text-center" width="10%">Category</th>
+                    <th width="15%">Description</th>
+                    <th class="text-center" width="5%">Att</th>
+                    <th class="text-center" width="5%">Pri</th>
+                    <th class="text-center" width="12%">Status</th>
+                    <th class="text-center" width="12%">Last Updated</th>
+                    {% if role == 'Admin' %}<th class="text-center" width="5%"></th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="ticketTableBody">
+                {% for ticket in tickets %}
+                <tr data-status="{{ ticket.status }}" data-priority="{{ ticket.priority }}" data-date="{{ ticket.created_at|localtime|date:'Y-m-d' }}">
+                    
+                    <td class="text-center"><span class="ticket-id">#{{ ticket.id }}</span></td>
+                    
+                    <td>
+                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">{{ ticket.created_at|localtime|date:"M d, Y" }}</div>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ ticket.created_at|localtime|time:"h:i A" }}</small>
+                    </td>
+                    
+                    <td class="text-center"><span class="fw-bold" style="color: var(--brand-navy);">{{ ticket.site.name }}</span></td>
+                    <td class="text-center text-muted">{{ ticket.location.name }}</td>
+                    <td class="text-center"><span class="badge bg-light text-dark border">{{ ticket.category }}</span></td>
+                    
+                    <td>
+                        {% if ticket.description %}
+                            <button class="btn btn-sm btn-light border w-100 text-start text-truncate" style="max-width: 150px;" onclick="showDescription(`{{ ticket.description|escapejs }}`)">
+                                <i class="bi bi-card-text me-1"></i> View
+                            </button>
+                        {% else %}
+                            <span class="text-muted opacity-25">-</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        {% if ticket.photo %}
+                        <button onclick="viewImage('{{ ticket.photo.url }}')" class="btn-icon-soft"><i class="bi bi-image"></i></button>
+                        {% else %}
+                        <span class="text-muted opacity-25">-</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td class="text-center">
+                        <span class="badge rounded-pill 
+                            {% if ticket.priority == 'High' %}bg-danger
+                            {% elif ticket.priority == 'Medium' %}bg-warning text-dark
+                            {% else %}bg-info text-dark{% endif %}">
+                            {{ ticket.priority|slice:":1" }}
+                        </span>
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center position-relative">
+                            {% if role == 'Admin' or role == 'Manager' %}
+                                <form method="POST" action="{% url 'accounts:update_ticket' ticket.id %}" id="statusForm{{ ticket.id }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="remarks">
+                                    <select name="status" class="form-select form-select-sm py-1" 
+                                            style="width: 125px; font-size: 0.8rem; border-color: #dee2e6;"
+                                            data-ticket-id="{{ ticket.id }}" onchange="handleStatusChange(this)">
+                                        {% with current=ticket.status %}
+                                        <option value="Open" {% if current == 'Open' %}selected{% endif %} {% if current != 'Open' %}disabled{% endif %}>Open</option>
+                                        <option value="Attended" {% if current == 'Attended' %}selected{% endif %} {% if current in 'In Progress Delayed Closed' %}disabled{% endif %}>Attended</option>
+                                        <option value="In Progress" {% if current == 'In Progress' %}selected{% endif %} {% if current in 'Delayed Closed' %}disabled{% endif %}>In Progress</option>
+                                        <option value="Delayed" {% if current == 'Delayed' %}selected{% endif %} {% if current == 'Closed' %}disabled{% endif %}>Delayed</option>
+                                        <option value="Closed" {% if current == 'Closed' %}selected{% endif %}>Closed</option>
+                                        {% endwith %}
+                                    </select>
+                                </form>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ ticket.status }}</span>
+                            {% endif %}
+                            
+                            {% if ticket.status == 'Delayed' %}
+                            <button class="btn btn-sm text-danger p-0 border-0 position-absolute" 
+                                    style="right: -20px;"
+                                    title="View Delay Reason"
+                                    onclick="showReason(`{{ ticket.remarks|default:'No reason provided.'|escapejs }}`)">
+                                <i class="bi bi-info-circle-fill fs-6"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">{{ ticket.updated_at|localtime|date:"M d" }}</div>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ ticket.updated_at|localtime|time:"h:i A" }}</small>
+                    </td>
+                    
+                    {% if role == 'Admin' %}
+                    <td class="text-center">
+                        <form method="POST" action="{% url 'accounts:delete_ticket' ticket.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-link text-danger p-0 opacity-50 hover-opacity-100"><i class="bi bi-trash-fill"></i></button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="d-flex justify-content-center mb-3 gap-2">
+                <button class="btn btn-dark rounded-pill" onclick="rotateImg(-90)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                <button class="btn btn-dark rounded-pill" onclick="zoomImg(-0.2)"><i class="bi bi-zoom-out"></i></button>
+                <button class="btn btn-dark rounded-pill" onclick="zoomImg(0.2)"><i class="bi bi-zoom-in"></i></button>
+                <button class="btn btn-dark rounded-pill" onclick="rotateImg(90)"><i class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn btn-danger rounded-pill" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+                <div class="image-container d-inline-block">
+                    <img id="previewImage" src="" style="max-height: 80vh; max-width: 100%; transition: 0.3s;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="delayedModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger-subtle border-0">
+                <h5 class="modal-title fw-bold text-danger">Reason Required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="filter-label mb-2">Why is this delayed?</label>
+                <textarea id="globalRemarkInput" class="form-control" rows="3" placeholder="Enter specific reason..."></textarea>
+                <div id="remarkError" class="text-danger small mt-2 d-none fw-bold"><i class="bi bi-exclamation-circle"></i> Reason is required!</div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger fw-bold" onclick="confirmDelay()">Save Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewReasonModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold text-dark">Delay Reason</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="p-3 bg-danger-subtle rounded text-danger fw-medium" id="reasonText"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="descriptionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold text-brand-navy">Ticket Description</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p id="descriptionText" class="fs-6 mb-0 text-dark" style="line-height: 1.6;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- FILTERS ---
+    const filterStatus = document.getElementById('filterStatus');
+    const filterPriority = document.getElementById('filterPriority');
+    const filterDate = document.getElementById('filterDate');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+
+    function applyFilters() {
+        const statusVal = filterStatus.value;
+        const priorityVal = filterPriority.value;
+        const dateVal = filterDate.value; 
+        const rows = document.querySelectorAll('#ticketTableBody tr');
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            const rowPriority = row.getAttribute('data-priority');
+            const rowDate = row.getAttribute('data-date'); 
+            let show = true;
+            if (statusVal !== 'All' && rowStatus !== statusVal) show = false;
+            if (priorityVal !== 'All' && rowPriority !== priorityVal) show = false;
+            if (dateVal && rowDate !== dateVal) show = false;
+            row.style.display = show ? '' : 'none';
+        });
+    }
+
+    if(filterStatus) filterStatus.addEventListener('change', applyFilters);
+    if(filterPriority) filterPriority.addEventListener('change', applyFilters);
+    if(filterDate) filterDate.addEventListener('change', applyFilters);
+    if(clearFiltersBtn) clearFiltersBtn.addEventListener('click', () => {
+        filterStatus.value = 'All';
+        filterPriority.value = 'All';
+        filterDate.value = '';
+        applyFilters();
+    });
+
+    // --- TICKET ACTIONS ---
+    let activeSelectElement = null;
+    let delayModalInstance = null; 
+
+    function handleStatusChange(selectElement) {
+        if (selectElement.value === 'Delayed') {
+            activeSelectElement = selectElement;
+            document.getElementById('globalRemarkInput').value = "";
+            document.getElementById('remarkError').classList.add('d-none');
+            const modalEl = document.getElementById('delayedModal');
+            const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+            delayModalInstance = modal;
+        } else {
+            document.getElementById('statusForm' + selectElement.dataset.ticketId).submit();
+        }
+    }
+
+    function confirmDelay() {
+        const text = document.getElementById('globalRemarkInput').value.trim();
+        if (!text) {
+            document.getElementById('remarkError').classList.remove('d-none');
+            return;
+        }
+        const form = document.getElementById('statusForm' + activeSelectElement.dataset.ticketId);
+        form.querySelector("input[name='remarks']").value = text;
+        if(delayModalInstance) delayModalInstance.hide();
+        form.submit();
+    }
+
+    function showReason(reason) {
+        document.getElementById('reasonText').innerText = reason || "No reason provided.";
+        new bootstrap.Modal(document.getElementById('viewReasonModal')).show();
+    }
+
+    function showDescription(description) {
+        document.getElementById('descriptionText').innerText = description;
+        new bootstrap.Modal(document.getElementById('descriptionModal')).show();
+    }
+
+    // --- IMAGE VIEWER ---
+    let currentScale = 1;
+    let currentRotation = 0;
+    const imgElement = document.getElementById('previewImage');
+    
+    function viewImage(url) {
+        if(imgElement) {
+            imgElement.src = url;
+            currentScale = 1; currentRotation = 0; updateTransform();
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+    }
+    function zoomImg(factor) {
+        currentScale += factor; if (currentScale < 0.2) currentScale = 0.2; updateTransform();
+    }
+    function rotateImg(deg) {
+        currentRotation += deg; updateTransform();
+    }
+    function updateTransform() {
+        if(imgElement) imgElement.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg)`;
+    }
+</script>
+{% endblock %}

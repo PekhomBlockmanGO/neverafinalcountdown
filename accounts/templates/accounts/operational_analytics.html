@@ -1,0 +1,294 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block page_title %}Operational Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- BOLD ENTERPRISE THEME: ANALYTICS --- */
+    :root {
+        --brand-navy: #1e2a5c;
+        --brand-red: #d90429;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-600: #64748b;
+        --gray-800: #1e293b;
+    }
+
+    body { background-color: #f8fafc; }
+
+    /* 1. ANALYTICS CARDS (Power Cards) */
+    .chart-card {
+        background: #ffffff;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    /* Navy Top Accent */
+    .chart-card::after {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        background: var(--brand-navy);
+    }
+
+    .chart-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 2. STAT CARDS */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        transition: 0.2s;
+        height: 100%;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+    
+    .stat-icon {
+        width: 50px; height: 50px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+    }
+    /* Icon Colors */
+    .icon-navy { background: rgba(30, 42, 92, 0.1); color: var(--brand-navy); }
+    .icon-red { background: rgba(217, 4, 41, 0.1); color: var(--brand-red); }
+    .icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+    .stat-info h3 { font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--gray-800); }
+    .stat-info p { margin: 0; font-size: 0.75rem; color: var(--gray-600); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* 3. TYPOGRAPHY */
+    .section-title {
+        color: var(--brand-navy);
+        font-weight: 800;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-title i { color: var(--brand-red); }
+
+    .chart-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+    
+    /* 4. INPUTS (Grey Background Style - Just in case you add filters later) */
+    .form-control, .form-select {
+        background-color: var(--gray-100);
+        border: 2px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--brand-navy);
+        transition: all 0.2s ease-in-out;
+    }
+    .form-control:hover, .form-select:hover { border-color: #cbd5e1; background-color: #eef2f6; }
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff;
+        border-color: var(--brand-red);
+        box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.15);
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4 g-4">
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon icon-navy">
+                <i class="bi bi-stack"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_tickets }}</h3>
+                <p>Total Volume</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon icon-green">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="completionRateDisplay">0%</h3>
+                <p>Completion Rate</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon icon-red">
+                <i class="bi bi-exclamation-diamond-fill"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="pendingDisplay">0%</h3>
+                <p>Pending Actions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <h5 class="section-title">
+                <i class="bi bi-bar-chart-steps"></i> Category Performance
+            </h5>
+            <div class="chart-container">
+                <canvas id="opsCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h5 class="section-title">
+                <i class="bi bi-pie-chart-fill"></i> Status Distribution
+            </h5>
+            <div class="chart-container">
+                <canvas id="opsStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // --- 1. DATA INJECTION ---
+    const categoryLabels = {{ category_labels|default:"[]"|safe }};
+    const categoryCounts = {{ category_counts|default:"[]"|safe }};
+    
+    const statusLabels = {{ status_labels|default:"[]"|safe }};
+    const statusData = {{ status_percentages|default:"[]"|safe }};
+
+    // --- 2. KPI CALCULATIONS ---
+    function updateKPIs() {
+        if (statusLabels.length > 0 && statusData.length > 0) {
+            // Find index of 'Closed'
+            const closedIndex = statusLabels.indexOf('Closed');
+            let closedPercent = 0;
+            
+            if (closedIndex !== -1) {
+                closedPercent = statusData[closedIndex];
+            }
+            
+            // Pending is roughly 100% - Closed%
+            const pendingPercent = (100 - closedPercent).toFixed(1);
+            
+            // Update DOM
+            document.getElementById('completionRateDisplay').innerText = closedPercent.toFixed(1) + "%";
+            document.getElementById('pendingDisplay').innerText = pendingPercent + "%";
+        }
+    }
+    updateKPIs();
+
+    // --- 3. CHART STYLING ---
+    const brandNavy = '#1e2a5c';
+    const brandRed = '#d90429';
+    // Professional palette
+    const palette = [brandNavy, brandRed, '#10b981', '#f59e0b', '#3b82f6', '#6366f1'];
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'bottom',
+                labels: { 
+                    usePointStyle: true, 
+                    padding: 20,
+                    font: { family: "'Inter', sans-serif", size: 11, weight: 600 },
+                    color: '#64748b'
+                }
+            }
+        }
+    };
+
+    // --- A. CATEGORY CHART ---
+    const ctxCat = document.getElementById('opsCategoryChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Total Tickets',
+                data: categoryCounts,
+                backgroundColor: brandNavy,
+                borderRadius: 4,
+                barThickness: 35
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: { legend: { display: false } }, // Hide legend for cleaner look
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#f1f5f9' },
+                    ticks: { color: '#94a3b8', font: { family: 'Inter' } } 
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { family: 'Inter', weight: 600 } }
+                }
+            }
+        }
+    });
+
+    // --- B. STATUS CHART ---
+    const ctxStat = document.getElementById('opsStatusChart').getContext('2d');
+    new Chart(ctxStat, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: palette,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            ...commonOptions,
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.raw + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

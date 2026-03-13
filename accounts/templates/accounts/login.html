@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neverno CMMS - Secure Access</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --primary: #20306F;
+            --secondary: #d90429;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #20306F 0%, #111a40 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-wrapper {
+            width: 95%;
+            max-width: 1000px; /* Slightly tighter for a more modern feel */
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            display: flex;
+            min-height: 600px;
+        }
+
+        /* LEFT PANEL */
+        .left-panel {
+            flex: 1.2;
+            background: linear-gradient(135deg, #20306F 0%, #162457 100%);
+            color: white;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* Adds a subtle overlay effect to the left panel */
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .brand-section {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-section img {
+            width: 130px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .left-content h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .left-content p {
+            color: #cbd5e1;
+            font-size: 15px;
+            max-width: 90%;
+            line-height: 1.6;
+        }
+
+        .copyright {
+            position: relative;
+            z-index: 2;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            flex: 1;
+            padding: 50px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .login-subtitle {
+            color: #64748b;
+            font-size: 15px;
+            margin-bottom: 35px;
+            font-weight: 500;
+        }
+
+        /* Form Inputs matching the Complaint Form perfectly! */
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            color: #0f172a;
+            font-size: 0.95rem !important;
+            box-shadow: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background-color: #ffffff !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(32, 48, 111, 0.15) !important;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 18px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #94a3b8;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        /* Modernized Buttons */
+        .btn-login {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 16px rgba(217, 4, 41, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #b00321;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(217, 4, 41, 0.5);
+            color: white;
+        }
+
+        .btn-back {
+            background: #f8fafc;
+            color: #64748b;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid #e2e8f0;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--primary);
+            border-color: #cbd5e1;
+        }
+
+        .secure-note {
+            font-size: 12px;
+            margin-top: 25px;
+            color: #94a3b8;
+            text-align: center;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .error-box {
+            background-color: #fee2e2;
+            border-left: 4px solid var(--secondary);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            color: #b91c1c;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 992px) {
+            .main-wrapper {
+                flex-direction: column;
+                max-width: 500px;
+                min-height: auto;
+            }
+            .left-panel {
+                display: none;
+            }
+            .right-panel {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="main-wrapper">
+
+    <div class="left-panel">
+
+        <div>
+            <div class="brand-section">
+                <img src="{% static 'images/logo.png' %}" alt="Navera Logo">
+                <div class="brand-title">Navera</div>
+                <div class="brand-subtitle">
+                    Computerized Maintenance Management Platform
+                </div>
+            </div>
+
+            <div class="left-content mt-5">
+                <h2>Secure Operational Access.</h2>
+                <p>
+                    Access your maintenance control panel to manage assets,
+                    monitor work orders, and streamline facility operations
+                    within a structured and secure environment.
+                </p>
+            </div>
+        </div>
+
+        <div class="copyright">
+            © 2026 NEVERNO ALLIED SERVICES PVT LTD
+        </div>
+
+    </div>
+
+    <div class="right-panel">
+
+        <div class="login-card">
+
+            <div class="login-title">Authentication</div>
+            <div class="login-subtitle">
+                Verify your credentials to access the secure panel.
+            </div>
+
+            {% if form.errors %}
+            <div class="error-box">
+                <i class="bi bi-exclamation-circle me-2"></i>Invalid username or password.
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label">System Identity</label>
+                    <input type="text" name="username"
+                           class="form-control"
+                           placeholder="Enter username"
+                           required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Access Key</label>
+                    <div class="password-wrapper">
+                        <input type="password"
+                               name="password"
+                               id="password"
+                               class="form-control"
+                               placeholder="Enter password"
+                               required>
+                        <i class="bi bi-eye toggle-password" id="toggleIcon" onclick="togglePassword()"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-login w-100">
+                    Establish Secure Connection <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+
+                <a href="{% url 'tickets:manual_complaint' %}" class="btn-back w-100">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Complaint Form
+                </a>
+
+                <div class="secure-note">
+                    <i class="bi bi-shield-lock me-1"></i> Secure Mode Enabled <br>
+                    Credential issues? Contact the Systems Administrator.
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("password");
+    const icon = document.getElementById("toggleIcon");
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+    }
+}
+</script>
+
+</body>
+</html>

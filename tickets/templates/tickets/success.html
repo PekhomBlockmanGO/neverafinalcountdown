@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket Submitted - Navera CMMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Global & Background - Matches the Form Page */
+        body {
+            background: linear-gradient(135deg, #1e2a5c 0%, #111a3f 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Blobs */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+        }
+        body::before {
+            width: 350px;
+            height: 350px;
+            background: rgba(217, 4, 41, 0.4); /* Brand Red */
+            top: 5%;
+            left: 15%;
+        }
+        body::after {
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 150, 255, 0.3); /* Bright Blue */
+            bottom: 5%;
+            right: 15%;
+        }
+
+        /* Centered Glass Card */
+        .success-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 50px 40px;
+            text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Glass Icon Container */
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .icon-wrapper svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 24px;
+            color: #1e2a5c;
+            letter-spacing: 0.5px;
+        }
+
+        .message-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 15px;
+            color: #1e293b;
+        }
+
+        .message-text {
+            color: #475569;
+            margin-top: 10px;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        /* Button Styling Matches Form exactly */
+        .btn-back {
+            display: inline-block;
+            background: #d90429;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(217, 4, 41, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            background: #b00321;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(217, 4, 41, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="success-card">
+
+    <div class="icon-wrapper">
+        <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+        </svg>
+    </div>
+
+    <div class="brand-title">
+        Navera CMMS
+    </div>
+
+    <div class="message-title">
+        Ticket Successfully Submitted!
+    </div>
+
+    <div class="message-text">
+        Your complaint has been recorded successfully.<br>
+        Our maintenance team will review and take necessary action shortly.
+    </div>
+
+    <a href="{% url 'tickets:manual_complaint' %}" class="btn-back">
+    Submit Another Ticket
+</a>
+        
+
+</div>
+
+</body>
+</html>

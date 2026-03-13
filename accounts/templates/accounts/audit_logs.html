@@ -1,0 +1,357 @@
+{% extends "accounts/base.html" %}
+{% load static tz %}
+
+{% block page_title %}Audit Logs{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- BOLD ENTERPRISE THEME: AUDIT LOGS --- */
+    :root {
+        --brand-navy: #1e2a5c;
+        --brand-red: #d90429;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-800: #1e293b;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    /* HEADER */
+    .audit-header {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 4px solid var(--brand-navy);
+    }
+
+    .btn-print {
+        background: var(--brand-red);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        transition: 0.2s;
+        box-shadow: 0 4px 12px rgba(217, 4, 41, 0.2);
+    }
+
+    .btn-print:hover {
+        background: #b00321;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(217, 4, 41, 0.3);
+        color: white;
+    }
+
+    /* TABLE CARD */
+    .table-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .table thead th {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 18px 24px;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .table td {
+        padding: 18px 24px;
+        vertical-align: middle;
+        font-size: 0.95rem;
+        color: var(--gray-800);
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .table tr:hover td {
+        background-color: #fcfcfc;
+    }
+
+    /* Ticket Ref */
+    .ticket-ref {
+        font-family: 'JetBrains Mono', monospace;
+        background: var(--gray-100);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        color: var(--brand-navy);
+        border: 1px solid var(--gray-200);
+    }
+
+    /* Timestamp */
+    .log-timestamp {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .log-date {
+        font-weight: 700;
+        color: var(--gray-800);
+    }
+
+    .log-time {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+    }
+
+    /* Activity Badges */
+    .activity-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .act-created {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .act-update {
+        background: #e0f2fe;
+        color: #075985;
+        border: 1px solid #bae6fd;
+    }
+
+    /* Resolution Time Styling */
+    .resolution-time {
+        font-weight: 700;
+        color: #0f172a;
+        background: #fef9c3;
+        padding: 6px 12px;
+        border-radius: 8px;
+        display: inline-block;
+        border: 1px solid #fde68a;
+    }
+
+    .no-time {
+        color: var(--gray-500);
+        font-style: italic;
+    }
+
+    /* 🖨️ PERFECT PRINT LOGIC */
+    @media print {
+        /* 1. Page settings (Optional: forces landscape mode for wider tables) */
+        @page { 
+            margin: 0.5cm; 
+            size: landscape; 
+        }
+
+        /* 2. Hide UI elements completely (Sidebar, Nav, Buttons, Filters) */
+        aside, .sidebar, header, .navbar, .top-bar, 
+        .no-print, .btn-print, #statusFilter, label[for="statusFilter"],
+        .audit-header .d-flex.align-items-center.gap-3 /* Hides the button wrapper */
+        {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* 3. Reset the main layout to take up the full paper width */
+        body, html, .main-content, .content-wrapper, main, .main-wrapper, .col-12, .row {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: static !important;
+            flex: none !important;
+            display: block !important;
+        }
+
+        /* 4. Fix the table rendering */
+        .table-card {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+
+        .table {
+            width: 100% !important;
+            table-layout: auto !important; 
+        }
+
+        /* 5. Clean up headers and rows for print */
+        .table thead th {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            border-bottom: 2px solid #cbd5e1 !important;
+        }
+
+        .table td {
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        /* 6. Ensure badges and status colors print correctly */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="audit-header">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">System Activity Log</h4>
+        <p class="text-muted small m-0 mt-1">
+            Reviewing all chronological system changes and ticket histories.
+        </p>
+    </div>
+
+   <div class="d-flex align-items-center gap-3 no-print">
+        
+        <div class="d-flex align-items-center rounded-pill shadow-sm" style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 16px;">
+            <label for="statusFilter" class="mb-0 fw-bold text-muted text-uppercase me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                Status:
+            </label>
+            <select id="statusFilter" class="form-select form-select-sm border-0 bg-transparent shadow-none fw-bold" style="color: #1e2a5c; cursor: pointer; padding-left: 0; padding-right: 24px; padding-top: 0; padding-bottom: 0; width: auto; font-size: 0.85rem; background-position: right center;">
+                <option value="ALL">All Tickets</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Attended">Attended</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+
+        <button class="btn-print rounded-pill shadow-sm" onclick="window.print()" style="padding: 8px 20px;">
+            <i class="bi bi-printer-fill me-2"></i> Export to PDF
+        </button>
+
+    </div>
+</div>
+
+{% if logs %}
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th width="12%">Reference</th>
+                    <th width="23%">Timeline</th>
+                    <th width="45%">Activity Description</th>
+                    <th width="20%">Resolution Time (Hours)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+<tr class="audit-row" data-current-status="{{ log.ticket.status }}">
+                    <td>
+                        <span class="ticket-ref">#{{ log.ticket.id }}</span>
+                    </td>
+
+                    <td>
+                        <div class="log-timestamp">
+                            <span class="log-date">
+                                {{ log.timestamp|localtime|date:"M d, Y" }}
+                            </span>
+                            <span class="log-time">
+                                <i class="bi bi-clock me-1"></i>
+                                {{ log.timestamp|localtime|time:"h:i A" }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td>
+                        {% if log.status == 'Open' %}
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="activity-badge act-created">
+                                    <i class="bi bi-plus-circle-fill me-2"></i> Created
+                                </span>
+                                <span class="fw-medium">
+                                    New ticket submitted to the system.
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="activity-badge act-update">
+                                    <i class="bi bi-arrow-repeat me-2"></i> Update
+                                </span>
+                                <span class="fw-medium">
+                                    Status transitioned to
+                                    <span class="text-primary fw-bold">
+                                        {{ log.status }}
+                                    </span>
+                                </span>
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if log.time_taken_hours %}
+                            <span class="resolution-time">
+                                {{ log.time_taken_hours }} hrs
+                            </span>
+                        {% else %}
+                            <span class="no-time">—</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 bg-white border border-dashed rounded-4" style="border-width: 2px;">
+    <div class="mb-3">
+        <i class="bi bi-clipboard2-x fs-1 text-muted opacity-25"></i>
+    </div>
+    <h5 class="fw-bold text-dark">No Activity Recorded</h5>
+    <p class="text-muted small">
+        System logs will appear here as soon as tickets are created or updated.
+    </p>
+</div>
+{% endif %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusFilter = document.getElementById('statusFilter');
+        const rows = document.querySelectorAll('.audit-row');
+
+        statusFilter.addEventListener('change', function() {
+            const selectedStatus = this.value;
+
+            rows.forEach(row => {
+                // Get the current status from the data attribute we added
+                const rowStatus = row.getAttribute('data-current-status');
+
+                // Toggle visibility
+                if (selectedStatus === 'ALL' || rowStatus === selectedStatus) {
+                    row.style.display = ''; // Show
+                } else {
+                    row.style.display = 'none'; // Hide
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

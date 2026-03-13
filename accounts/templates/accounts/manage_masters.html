@@ -1,0 +1,407 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block page_title %}Admin Control Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* --- PROFESSIONAL & CLASSY THEME --- */
+    :root {
+        --brand-navy: #1e2a5c;
+        --brand-red: #d90429;
+        --gray-100: #f1f5f9; 
+        --gray-200: #e2e8f0; 
+        --gray-500: #64748b; 
+        --gray-800: #1e293b; 
+    }
+
+    body { background-color: #f8fafc; }
+
+    /* 1. CLASSY TABS */
+    .nav-tabs {
+        border-bottom: 2px solid var(--gray-200);
+        margin-bottom: 30px;
+        gap: 30px;
+    }
+
+    .nav-tabs .nav-link {
+        border: none !important;
+        border-bottom: 3px solid transparent !important;
+        color: var(--gray-500) !important;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 12px 4px;
+        border-radius: 0;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-tabs .nav-link:hover { color: #ffffff !important; border-bottom-color: #cbd5e1 !important; }
+    .nav-tabs .nav-link.active { color: var(--brand-red) !important; border-bottom: 3px solid var(--brand-red) !important; background: transparent !important; }
+    .nav-tabs .nav-link.active:hover { color: #ffffff !important; }
+
+    /* 2. CARDS */
+    .admin-card {
+        background: #ffffff; border: 1px solid var(--gray-200); border-radius: 12px;
+        padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); height: 100%;
+        display: flex; flex-direction: column; position: relative; 
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .admin-card::after { 
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; 
+        background: var(--brand-navy); 
+        border-top-left-radius: 11px; border-top-right-radius: 11px; 
+    }
+    .card-action::after { background: var(--brand-red); }
+    .admin-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); }
+
+    /* 3. INPUTS */
+    .form-control, .form-select {
+        background-color: #f1f5f9 !important; border: 2px solid #e2e8f0 !important;
+        border-radius: 8px !important; padding: 12px 15px !important; font-size: 0.9rem !important;
+        font-weight: 600 !important; color: #1e2a5c !important;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05) !important; transition: all 0.2s ease-in-out !important;
+    }
+    .form-control:hover, .form-select:hover { background-color: #e2e8f0 !important; border-color: #cbd5e1 !important; }
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff !important; border-color: #d90429 !important; 
+        box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.2) !important; color: #000 !important; outline: none !important;
+    }
+    select[multiple] { background-color: #f1f5f9 !important; }
+
+    /* 4. BUTTONS */
+    button.btn-submit {
+        background-color: #1e2a5c !important; color: #ffffff !important; font-weight: 700 !important; 
+        text-transform: uppercase !important; font-size: 0.8rem !important; padding: 12px !important; 
+        border-radius: 8px !important; width: 100% !important; border: none !important; letter-spacing: 0.5px !important; 
+        transition: all 0.2s !important; display: block !important; opacity: 1 !important; visibility: visible !important;
+    }
+    button.btn-submit:hover { background-color: #151e45 !important; box-shadow: 0 4px 12px rgba(30, 42, 92, 0.3) !important; color: #ffffff !important; }
+    button.btn-danger-bold { background-color: #d90429 !important; }
+    button.btn-danger-bold:hover { background-color: #b00321 !important; box-shadow: 0 4px 12px rgba(217, 4, 41, 0.3) !important; color: #ffffff !important; }
+
+    /* EMERGENCY CALL BUTTON */
+    .btn-call-emergency {
+        background-color: #d90429 !important; color: #ffffff !important; font-weight: 800 !important; text-transform: uppercase !important;
+        font-size: 0.9rem !important; padding: 14px 24px !important; border-radius: 8px !important; border: none !important;
+        letter-spacing: 1px !important; transition: all 0.2s !important; text-decoration: none !important; display: inline-block !important;
+        box-shadow: 0 4px 6px rgba(217, 4, 41, 0.2);
+    }
+    .btn-call-emergency:hover { background-color: #b00321 !important; box-shadow: 0 6px 15px rgba(217, 4, 41, 0.4) !important; color: #ffffff !important; transform: translateY(-2px); }
+
+    /* 5. TYPOGRAPHY */
+    h6 { color: var(--gray-800); font-weight: 800; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 1rem; }
+    .form-label { font-size: 0.75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .count-badge { background: var(--brand-red); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; float: right; }
+
+    /* 6. TABLES */
+    .table-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; }
+    .table-header { background: var(--gray-100); padding: 15px 20px; border-bottom: 1px solid var(--gray-200); }
+    .table th { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--gray-500); padding: 16px 20px; border-bottom: 2px solid var(--gray-200); }
+    .table td { padding: 16px 20px; vertical-align: middle; color: var(--gray-800); font-weight: 500; border-bottom: 1px solid var(--gray-100); }
+    .user-avatar-circle { width: 32px; height: 32px; background: var(--brand-navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+
+    /* 🖨️ PERFECT PRINT LOGIC */
+    @media print {
+        /* 1. Nuke browser headers/footers */
+        @page {
+            margin: 0; 
+        }
+
+        /* 2. Hide all text/borders by default */
+        body * { 
+            visibility: hidden; 
+        }
+
+        /* 3. Structurally DESTROY the grid columns and ghost elements */
+        .nav-tabs, 
+        .col-md-6.col-lg-3,  
+        form,                
+        .admin-card::after,  
+        button,
+        .qr-print-area > div:last-child /* Hides the empty space from the print button */
+        { 
+            display: none !important; 
+        }
+
+        /* 4. Strip positioning from Bootstrap layout elements so they don't trap the QR code */
+        .admin-card, .col-12, .row, .tab-content, .tab-pane {
+            position: static !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transform: none !important;
+        }
+
+        /* 5. Show the QR area and its children */
+        .qr-print-area, .qr-print-area * { 
+            visibility: visible !important; 
+        }
+        
+        /* 6. TRUE Center using position: fixed to snap to the physical paper size */
+        .qr-print-area { 
+            position: fixed !important; /* This ignores parent elements entirely */
+            top: 0 !important; 
+            left: 0 !important; 
+            width: 100vw !important; 
+            height: 100vh !important; 
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* 7. Force exact colors and sharp rendering */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#locations"><i class="bi bi-building-fill"></i> Location Manager</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#users"><i class="bi bi-people-fill"></i> Users & Roles</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#groups"><i class="bi bi-shield-lock-fill"></i> Groups</button></li>
+        <li class="nav-item"><button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#emergency"><i class="bi bi-telephone-fill"></i> Emergency</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="locations">
+            <div class="row g-4">
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="admin-card">
+                        <h6>Add Site <span class="count-badge">{{ sites.count }}</span></h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="add_site">
+                            <div><label class="form-label">Site Name</label><input type="text" name="site_name" class="form-control" placeholder="e.g. Headquarters" required></div>
+                            <button type="submit" class="btn-submit mt-auto">Create Site</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="admin-card">
+                        <h6>Add Building <span class="count-badge">{{ areas.count }}</span></h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="add_area">
+                            <div><label class="form-label">Select Site</label><select name="site_id" class="form-select" required><option value="">Choose Site...</option>{% for s in sites %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></div>
+                            <div><label class="form-label">Building Name</label><input type="text" name="area_name" class="form-control" placeholder="e.g. Block A" required></div>
+                            <button type="submit" class="btn-submit mt-auto">Create Building</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="admin-card">
+                        <h6>Add Floor <span class="count-badge">{{ locations.count }}</span></h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="add_location">
+                            <div><label class="form-label">Select Building</label><select name="area_id" class="form-select" required><option value="">Choose Building...</option>{% for a in areas %}<option value="{{ a.id }}">{{ a.name }} ({{ a.site.name }})</option>{% endfor %}</select></div>
+                            <div><label class="form-label">Floor Name</label><input type="text" name="location_name" class="form-control" placeholder="e.g. Level 1" required></div>
+                            <button type="submit" class="btn-submit mt-auto">Create Floor</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="admin-card">
+                        <h6>Add Room <span class="count-badge">{{ specific_areas.count }}</span></h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="add_specific_area">
+                            <div><label class="form-label">Room Name</label><input type="text" name="specific_area_name" class="form-control" placeholder="e.g. Server Room" required></div>
+                            <button type="submit" class="btn-submit btn-danger-bold mt-auto">Create Room</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="admin-card card-action" style="background: #eef2f6;">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-qr-code-scan fs-4 me-2 text-dark"></i>
+                            <h6 class="m-0">QR Code Generator</h6>
+                        </div>
+                        
+                        <form method="POST" class="row g-3 align-items-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="generate_qr">
+                            <div class="col-md"><label class="form-label">Site</label><select name="qr_site" class="form-select" required><option value="">Select...</option>{% for s in sites %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></div>
+                            <div class="col-md"><label class="form-label">Building</label><select name="qr_area" class="form-select" required><option value="">Select...</option>{% for a in areas %}<option value="{{ a.id }}">{{ a.name }}</option>{% endfor %}</select></div>
+                            <div class="col-md"><label class="form-label">Floor</label><select name="qr_location" class="form-select" required><option value="">Select...</option>{% for l in locations %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}</select></div>
+                            <div class="col-md"><label class="form-label">Room</label><select name="qr_room" class="form-select" required><option value="">Select...</option>{% for r in specific_areas %}<option value="{{ r.id }}">{{ r.name }}</option>{% endfor %}</select></div>
+                            <div class="col-md-auto"><button type="submit" class="btn-submit btn-danger-bold px-4">Generate Code</button></div>
+                        </form>
+                        
+                        {% if qr_data %}
+                        <div class="mt-4 text-center p-4 qr-print-area">
+                            <div style="background: white; display: inline-block; padding: 35px 40px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <img src="data:image/png;base64,{{ qr_data }}" alt="QR Code" style="width: 250px; height: 250px;">
+                                <div style="color: #1e293b; margin-top: 15px; font-family: 'Inter', sans-serif;">
+                                    <h4 style="font-weight: 900; margin: 0; color: #20306F; text-transform: uppercase;">{{ qr_site_name }}</h4>
+                                    <p style="margin: 5px 0 0 0; font-weight: 600; color: #475569; font-size: 1.1rem;">{{ qr_location_name }}, {{ qr_room_name }}</p>
+                                </div>
+                                <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                    Powered by <span style="color: #20306F; font-weight: 800;">Neverno CMMS</span>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button onclick="window.print()" class="btn btn-dark fw-bold px-4 py-2" style="border-radius: 50px;"><i class="bi bi-printer-fill me-2"></i>Print QR Code</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="users">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="admin-card card-action">
+                        <h6>Create New User</h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="create_user">
+                            <div><label class="form-label">Username</label><input type="text" name="username" class="form-control" required></div>
+                            <div><label class="form-label">Email</label><input type="email" name="email" class="form-control"></div>
+                            <div><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+                            <div><label class="form-label">Assign Groups</label><select name="groups" class="form-select" multiple style="height: 100px;">{% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select></div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_superuser" id="adminCheck">
+                                <label class="form-label ms-2" for="adminCheck" style="cursor:pointer;">Grant Admin Access</label>
+                            </div>
+                            <button type="submit" class="btn-submit btn-danger-bold mt-auto">Add User</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="table-card h-100">
+                        <div class="table-header"><h6 class="m-0">Registered Users</h6></div>
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead><tr><th>User</th><th>Groups</th><th>Role</th><th class="text-end">Actions</th></tr></thead>
+                                <tbody>
+                                    {% for u in users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="user-avatar-circle">{{ u.username|slice:":1"|upper }}</div>
+                                                <div><div class="fw-bold">{{ u.username }}</div><div class="small text-muted">{{ u.email|default:"No Email" }}</div></div>
+                                            </div>
+                                        </td>
+                                        <td>{% for g in u.groups.all %}<span class="badge bg-light text-dark border">{{ g.name }}</span>{% empty %}<span class="text-muted small">-</span>{% endfor %}</td>
+                                        <td>{% if u.is_superuser %} <span class="badge bg-danger">ADMIN</span>{% else %} <span class="badge bg-primary">USER</span> {% endif %}</td>
+                                        <td class="text-end">
+                                            {% if u.id != request.user.id %}
+                                            <form method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="form_type" value="delete_user">
+                                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                                <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash-fill"></i></button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="groups">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="admin-card card-action">
+                        <h6>Create Group</h6>
+                        <form method="POST" class="d-flex flex-column flex-grow-1 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="create_group">
+                            <div><label class="form-label">Group Name</label><input type="text" name="group_name" class="form-control" placeholder="e.g. Maintenance" required></div>
+                            <button type="submit" class="btn-submit btn-danger-bold mt-auto">Create Group</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="table-card h-100">
+                        <div class="table-header"><h6 class="m-0">Access Groups</h6></div>
+                        <table class="table mb-0">
+                            <thead><tr><th>Group Name</th><th>Active Members</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                                {% for g in groups %}
+                                <tr>
+                                    <td class="fw-bold">{{ g.name }}</td>
+                                    <td><span class="badge bg-secondary">{{ g.user_set.count }} Users</span></td>
+                                    <td class="text-end">
+                                        {% if g.user_set.count == 0 %}
+                                        <form method="POST">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="form_type" value="delete_group">
+                                            <input type="hidden" name="group_id" value="{{ g.id }}">
+                                            <button class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash-fill"></i></button>
+                                        </form>
+                                        {% else %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="emergency">
+            <div class="row g-4 justify-content-center mt-2">
+                <div class="col-md-6 col-lg-4">
+                    <div class="admin-card card-action text-center justify-content-center align-items-center" style="padding: 40px 20px;">
+                        <div style="width: 70px; height: 70px; background-color: #fce8eb; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+                            <i class="bi bi-telephone-fill" style="color: var(--brand-red); font-size: 2rem;"></i>
+                        </div>
+                        <h6 style="color: var(--brand-navy); font-weight: 800; text-transform: uppercase; margin-bottom: 10px;">Update Emergency Contact</h6>
+                        
+                        <h2 style="color: var(--gray-800); font-weight: 900; margin-bottom: 25px; letter-spacing: 2px;">
+                            {% if emergency_contact and emergency_contact.phone_number|length == 10 %}
+                                {{ emergency_contact.phone_number }}
+                            {% else %}
+                                Not Set
+                            {% endif %}
+                        </h2>
+                        
+                        <form method="POST" class="d-flex flex-column w-100 gap-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="update_emergency">
+                            <div>
+                                <input type="text" name="phone_number" class="form-control text-center fw-bold" 
+                                       placeholder="Enter 10-digit number" 
+                                       value="{{ emergency_contact.phone_number|default:'' }}" 
+                                       pattern="[0-9]{10}" maxlength="10" minlength="10" required 
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                            <button type="submit" class="btn-submit btn-danger-bold mt-2">Save Number</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
