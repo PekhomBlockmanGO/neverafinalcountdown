@@ -136,8 +136,29 @@ if not DEBUG:
     CSRF_COOKIE_HTTPONLY = True
 
 # ---------------------------
-# LOGGING  (errors go to /var/log/nevera/django.log)
+# LOGGING  (errors go to /var/log/nevera/django.log in production)
 # ---------------------------
+import platform as _platform
+
+_log_handlers = {
+    'console': {
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+    },
+}
+
+# Only add the file handler on Linux (production VPS) where the log dir exists.
+if _platform.system() != 'Windows' and not DEBUG:
+    _log_handlers['file'] = {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': '/var/log/nevera/django.log',
+        'maxBytes': 1024 * 1024 * 5,   # 5 MB
+        'backupCount': 5,
+        'formatter': 'verbose',
+    }
+
+_active_handlers = list(_log_handlers.keys())
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -147,26 +168,14 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/var/log/nevera/django.log',
-            'maxBytes': 1024 * 1024 * 5,   # 5 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-    },
+    'handlers': _log_handlers,
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': _active_handlers,
         'level': config('LOG_LEVEL', default='WARNING'),
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': _active_handlers,
             'level': config('LOG_LEVEL', default='WARNING'),
             'propagate': False,
         },
