@@ -72,6 +72,12 @@ class QRComplaintForm(forms.ModelForm):
                 )
         return phone
 
+    def clean_photo(self):
+        photo = self.cleaned_data.get('photo')
+        if not photo:
+            raise forms.ValidationError("Please attach a photo of the incident before submitting.")
+        return photo
+
     def clean(self):
         cleaned = super().clean()
         area = cleaned.get('area')

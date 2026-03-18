@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
@@ -65,7 +65,7 @@ def qr_complaint_view(request, token=None):
                 remarks='Ticket created via Docket Form',
             )
 
-            return render(request, 'tickets/success.html', {'location': ticket.location})
+            return redirect('tickets:success')
     else:
         form = QRComplaintForm(initial=initial_data, is_qr=is_qr)
 
@@ -120,3 +120,9 @@ def check_new_tickets(request):
 def emergency_view(request):
     contact = EmergencyContact.objects.first()
     return render(request, 'tickets/emergency.html', {'contact': contact})
+
+# ---------------------------------------------------------------------------
+# Success View
+# ---------------------------------------------------------------------------
+def success_view(request):
+    return render(request, 'tickets/success.html')

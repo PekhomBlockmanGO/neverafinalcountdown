@@ -156,12 +156,19 @@
         Our maintenance team will review and take necessary action shortly.
     </div>
 
-    <a href="{% url 'tickets:manual_complaint' %}" class="btn-back">
-    Submit Another Ticket
-</a>
-        
+
 
 </div>
+
+<script>
+    // Prevent the user from going back to the form page to avoid duplicate submissions
+    if (window.history.replaceState) {
+        window.history.pushState(null, null, window.location.href);
+    }
+    window.addEventListener('popstate', function () {
+        window.history.pushState(null, null, window.location.href);
+    });
+</script>
 
 </body>
 </html>

@@ -15,4 +15,7 @@ urlpatterns = [
 
     # Emergency Page
     path('emergency/', views.emergency_view, name='emergency'),
+
+    # Success Page
+    path('success/', views.success_view, name='success'),
 ]
